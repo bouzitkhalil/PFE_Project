@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Présence temps réel{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="eyebrow">Vision par ordinateur</div>
+    <h1>Présence <span style="color:var(--teal)">temps réel</span></h1>
+  </div>
+  <div class="topbar-right">
+    {% if cv_ok and sface_ok %}
+      {% if model_trained %}
+        <span class="status-chip ok"><i class="bi bi-cpu-fill"></i> Modèle IA entraîné</span>
+      {% else %}
+        <span class="status-chip err"><i class="bi bi-exclamation-triangle-fill"></i> Modèle non entraîné</span>
+      {% endif %}
+    {% elif cv_ok %}
+      <span class="status-chip warn"><i class="bi bi-exclamation"></i> opencv-contrib requis</span>
+    {% else %}
+      <span class="status-chip err"><i class="bi bi-x-circle"></i> OpenCV non disponible</span>
+    {% endif %}
+    <form action="{{ url_for('api_retrain') }}" method="post" style="display:inline;">
+      <button type="submit" class="btn btn-outline btn-sm">
+        <i class="bi bi-arrow-repeat"></i> Réentraîner
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="video-layout">
+
+  <!-- Video feed -->
+  <div>
+    <div class="video-frame" id="video-container">
+      {% if cv_ok %}
+        <div class="video-status-bar">
+          <span class="live-badge">LIVE</span>
+          <span class="status-chip ok" style="font-size:11px;"><i class="bi bi-camera-video-fill"></i> Webcam 0</span>
+        </div>
+        <img id="video-img" src="{{ url_for('video_feed') }}"
+             alt="Flux webcam en direct"
+             style="width:100%;height:100%;object-fit:cover;display:block;">
+      {% else %}
+        <div class="video-placeholder">
+          <i class="bi bi-camera-video-off"></i>
+          <h3>Caméra non disponible</h3>
+          <p>OpenCV n'est pas installé ou la webcam est inaccessible.<br>
+             Installez les dépendances avec :<br>
+             <code style="background:var(--panel2);padding:4px 10px;border-radius:6px;display:inline-block;margin-top:8px;color:var(--indigo);">pip install opencv-contrib-python</code>
+          </p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- System info row -->
+    <div class="panel mt-4" style="margin-top:14px;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;">
+        <div style="padding:14px;border-right:1px solid var(--border2);text-align:center;">
+          <div class="text-muted text-xs font-bold" style="text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">OpenCV</div>
+          <div>{% if cv_ok %}<span class="status-chip ok">Actif</span>{% else %}<span class="status-chip err">Inactif</span>{% endif %}</div>
+        </div>
+        <div style="padding:14px;border-right:1px solid var(--border2);text-align:center;">
+          <div class="text-muted text-xs font-bold" style="text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">IA (YuNet/SFace)</div>
+          <div>{% if sface_ok %}<span class="status-chip ok">Actif</span>{% else %}<span class="status-chip err">Inactif</span>{% endif %}</div>
+        </div>
+        <div style="padding:14px;text-align:center;">
+          <div class="text-muted text-xs font-bold" style="text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">Modèle</div>
+          <div>{% if model_trained %}<span class="status-chip ok">Entraîné</span>{% else %}<span class="status-chip warn">Non prêt</span>{% endif %}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right sidebar -->
+  <div style="display:flex;flex-direction:column;gap:14px;">
+
+    <!-- Détections récentes -->
+    <div class="panel" style="flex:1;">
+      <div class="panel-header">
+        <div class="panel-title">Détections récentes</div>
+        <span class="live-badge">Live</span>
+      </div>
+      <div class="detection-feed" id="detection-feed">
+        <div style="text-align:center;padding:20px;color:var(--text-muted);">
+          <i class="bi bi-broadcast" style="font-size:28px;display:block;margin-bottom:8px;color:var(--indigo);"></i>
+          En attente de détections…
+        </div>
+      </div>
+    </div>
+
+    <!-- Présence actuelle -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Présence actuelle</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:28px;font-weight:800;color:var(--emerald);" id="v-present">—</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Présents</div>
+        </div>
+        <div style="background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.2);border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:28px;font-weight:800;color:var(--rose);" id="v-absent">—</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Absents</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">Taux d'occupation</div>
+      <div class="occ-bar-wrap">
+        <div class="occ-bar" id="v-occ-bar" style="width:0%"></div>
+      </div>
+      <div style="font-size:20px;font-weight:800;color:#fff;text-align:right;margin-top:6px;" id="v-occ-pct">0%</div>
+    </div>
+
+    <!-- Aide -->
+    <div class="panel" style="border:1px solid rgba(99,102,241,.2);background:rgba(99,102,241,.05);">
+      <div class="panel-title" style="margin-bottom:10px;"><i class="bi bi-lightbulb-fill" style="color:var(--amber);"></i> Comment ça marche</div>
+      <ul style="font-size:12px;color:var(--text-dim);line-height:2;padding-left:16px;">
+        <li>La webcam détecte les visages en temps réel</li>
+        <li>Le modèle LBPH identifie les employés inscrits</li>
+        <li>Entrée/sortie enregistrée automatiquement</li>
+        <li>Cooldown de {{ 90 }}s entre deux détections</li>
+        <li>Ajoutez des photos pour améliorer la précision</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+// Poll recent detections every 3s
+const feed = document.getElementById('detection-feed');
+const vPresent = document.getElementById('v-present');
+const vAbsent  = document.getElementById('v-absent');
+const vOccBar  = document.getElementById('v-occ-bar');
+const vOccPct  = document.getElementById('v-occ-pct');
+
+const icons = { entry: 'bi-arrow-down-circle-fill', exit: 'bi-arrow-up-circle-fill' };
+const colors = { entry: 'var(--emerald)', exit: 'var(--blue)', unknown: 'var(--text-muted)' };
+
+function refreshDetections() {
+  fetch('/api/recent_detections').then(r => r.json()).then(data => {
+    if (!data.length) return;
+    feed.innerHTML = data.map(d => `
+      <div class="det-item">
+        <span class="status-dot ${d.status === 'entry' ? 'online' : 'offline'}"></span>
+        <div style="flex:1;">
+          <div class="det-name">${d.name}</div>
+          <div style="font-size:11px;color:${colors[d.status]||'var(--text-muted)'};">
+            <i class="bi ${icons[d.status]||'bi-person'}"></i>
+            ${d.status === 'entry' ? 'Entrée' : d.status === 'exit' ? 'Sortie' : d.status}
+          </div>
+        </div>
+        <span class="det-time">${d.time}</span>
+      </div>
+    `).join('');
+  }).catch(() => {});
+}
+
+function refreshPresence() {
+  fetch('/api/presence').then(r => r.json()).then(d => {
+    if (vPresent) vPresent.textContent = d.present;
+    if (vAbsent)  vAbsent.textContent  = d.absent;
+    if (vOccBar)  vOccBar.style.width  = d.occupancy + '%';
+    if (vOccPct)  vOccPct.textContent  = d.occupancy + '%';
+  }).catch(() => {});
+}
+
+refreshDetections();
+refreshPresence();
+setInterval(refreshDetections, 3000);
+setInterval(refreshPresence, 5000);
+</script>
+{% endblock %}

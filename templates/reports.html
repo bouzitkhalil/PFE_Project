@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Rapports{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="eyebrow">Analyse & Exports</div>
+    <h1>Rapports de <span style="color:var(--indigo)">présence</span></h1>
+  </div>
+  <div class="topbar-right">
+    <a href="{{ url_for('report_excel') }}" class="btn btn-teal">
+      <i class="bi bi-file-earmark-excel-fill"></i> Export Excel
+    </a>
+    <a href="{{ url_for('report_pdf') }}" class="btn btn-primary">
+      <i class="bi bi-file-earmark-pdf-fill"></i> Export PDF
+    </a>
+  </div>
+</div>
+
+<!-- Summary stats -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
+  <div class="panel" style="text-align:center;padding:18px;">
+    <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">Total événements</div>
+    <div style="font-size:30px;font-weight:800;color:#fff;">{{ events|length }}</div>
+  </div>
+  <div class="panel" style="text-align:center;padding:18px;">
+    <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">Entrées</div>
+    <div style="font-size:30px;font-weight:800;color:var(--emerald);">
+      {{ events|selectattr('event_type','eq','entry')|list|length }}
+    </div>
+  </div>
+  <div class="panel" style="text-align:center;padding:18px;">
+    <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">Sorties</div>
+    <div style="font-size:30px;font-weight:800;color:var(--blue);">
+      {{ events|selectattr('event_type','eq','exit')|list|length }}
+    </div>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="panel">
+  <div class="panel-header">
+    <div><div class="panel-title">Historique des événements</div><div class="panel-subtitle">200 derniers événements</div></div>
+    <div class="search-bar" style="margin-bottom:0;">
+      <div class="search-input-wrap" style="min-width:240px;">
+        <i class="bi bi-search"></i>
+        <input type="text" class="search-input" id="rpt-search" placeholder="Rechercher…">
+      </div>
+      <select class="form-control" id="rpt-type" style="max-width:150px;">
+        <option value="">Tout</option>
+        <option value="entry">Entrées</option>
+        <option value="exit">Sorties</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table class="sw-table" id="rpt-table">
+      <thead>
+        <tr>
+          <th>Employé</th>
+          <th>Département</th>
+          <th>Événement</th>
+          <th>Date & Heure</th>
+          <th>Confiance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ev in events %}
+        <tr data-name="{{ ev.first_name }} {{ ev.last_name }}" data-dept="{{ ev.department }}" data-type="{{ ev.event_type }}">
+          <td>
+            <div class="flex-center gap-2">
+              <div style="width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--indigo),var(--teal));display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">
+                {{ ev.first_name[0]|upper }}
+              </div>
+              <span>{{ ev.first_name }} {{ ev.last_name }}</span>
+            </div>
+          </td>
+          <td class="text-dim">{{ ev.department }}</td>
+          <td>
+            <span class="badge badge-{{ ev.event_type }}">
+              <i class="bi {% if ev.event_type == 'entry' %}bi-arrow-down-circle-fill{% else %}bi-arrow-up-circle-fill{% endif %}"></i>
+              {{ ev.event_type|event_label }}
+            </span>
+          </td>
+          <td class="text-dim text-sm">{{ ev.event_time|dt }}</td>
+          <td>
+            {% if ev.confidence %}
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:60px;height:4px;background:var(--bg2);border-radius:999px;overflow:hidden;">
+                <div style="width:{{ (ev.confidence*100)|int }}%;height:100%;background:linear-gradient(90deg,var(--indigo),var(--teal));border-radius:999px;"></div>
+              </div>
+              <span class="text-sm text-muted">{{ (ev.confidence*100)|int }}%</span>
+            </div>
+            {% else %}
+            <span class="text-muted text-sm">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted);">
+          <i class="bi bi-calendar-x" style="font-size:28px;display:block;margin-bottom:8px;"></i>
+          Aucun événement enregistré
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+const rptSearch = document.getElementById('rpt-search');
+const rptType   = document.getElementById('rpt-type');
+
+function filterRpt() {
+  const q = rptSearch.value.toLowerCase();
+  const t = rptType.value;
+  document.querySelectorAll('#rpt-table tbody tr[data-name]').forEach(row => {
+    const matchQ = !q || row.dataset.name.toLowerCase().includes(q) || row.dataset.dept.toLowerCase().includes(q);
+    const matchT = !t || row.dataset.type === t;
+    row.style.display = (matchQ && matchT) ? '' : 'none';
+  });
+}
+rptSearch.addEventListener('input', filterRpt);
+rptType.addEventListener('change', filterRpt);
+</script>
+{% endblock %}

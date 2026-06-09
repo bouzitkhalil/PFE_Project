@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Statistiques & Analytiques{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="eyebrow">Analyse des données</div>
+    <h1>Statistiques & <span style="color:var(--teal)">Flux</span></h1>
+  </div>
+  <div class="topbar-right">
+    <span id="last-refresh" class="text-muted text-sm"></span>
+    <button class="btn btn-outline btn-sm" onclick="loadStats()">
+      <i class="bi bi-arrow-clockwise"></i> Actualiser
+    </button>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-grid mb-6" style="margin-bottom:20px;" id="analytics-kpis">
+  <div class="kpi-card green">
+    <div class="kpi-header"><span class="kpi-label">Présents</span><div class="kpi-icon"><i class="bi bi-person-check-fill"></i></div></div>
+    <div class="kpi-value" id="a-present">—</div>
+    <div class="kpi-sub">En ce moment</div>
+  </div>
+  <div class="kpi-card blue">
+    <div class="kpi-header"><span class="kpi-label">Entrées aujourd'hui</span><div class="kpi-icon"><i class="bi bi-box-arrow-in-right"></i></div></div>
+    <div class="kpi-value" id="a-entries">—</div>
+    <div class="kpi-sub">Détectées automatiquement</div>
+  </div>
+  <div class="kpi-card amber">
+    <div class="kpi-header"><span class="kpi-label">Sorties aujourd'hui</span><div class="kpi-icon"><i class="bi bi-box-arrow-right"></i></div></div>
+    <div class="kpi-value" id="a-exits">—</div>
+    <div class="kpi-sub">Flux sortant</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-header"><span class="kpi-label">Taux d'occupation</span><div class="kpi-icon"><i class="bi bi-building-fill"></i></div></div>
+    <div class="kpi-value" id="a-occ">—%</div>
+    <div class="kpi-sub">Occupation actuelle</div>
+  </div>
+</div>
+
+<!-- Row 1: Daily trend + Occupancy donut -->
+<div class="dash-grid-2" style="margin-bottom:16px;">
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Tendance sur 14 jours</div>
+        <div class="panel-subtitle">Total d'événements par journée</div>
+      </div>
+    </div>
+    <canvas id="trendChart" height="130"></canvas>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <div><div class="panel-title">Répartition par département</div></div>
+    </div>
+    <canvas id="deptChart" height="180"></canvas>
+  </div>
+</div>
+
+<!-- Row 2: Hourly + Top employees -->
+<div class="dash-grid-2" style="margin-bottom:16px;">
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">Flux horaire — Aujourd'hui</div>
+        <div class="panel-subtitle">Heures de pointe d'arrivée / départ</div>
+      </div>
+    </div>
+    <canvas id="hourlyA" height="130"></canvas>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <div><div class="panel-title">Top employés — Présences</div></div>
+    </div>
+    <canvas id="topEmpChart" height="130"></canvas>
+  </div>
+</div>
+
+<!-- Row 3: Weekly -->
+<div class="panel" style="margin-bottom:16px;">
+  <div class="panel-header">
+    <div>
+      <div class="panel-title">Fréquentation hebdomadaire</div>
+      <div class="panel-subtitle">Nombre d'employés uniques présents par jour (7 derniers jours)</div>
+    </div>
+  </div>
+  <canvas id="weeklyChart" height="80"></canvas>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+{% endblock %}

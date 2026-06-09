@@ -1,0 +1,366 @@
+\documentclass[12pt,a4paper]{report}
+
+% --- Packages indispensables ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positioning, fit, calc}
+\usepackage{tcolorbox}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{setspace}
+\usepackage{lipsum} % Pour du texte de remplissage si besoin
+
+% --- Configuration des marges ---
+\geometry{
+    top=2.5cm,
+    bottom=2.5cm,
+    left=3cm,
+    right=2.5cm
+}
+
+% --- Couleurs Personnalisées (Thème du projet) ---
+\definecolor{primary}{HTML}{0f172a} % Bleu très foncé (Sidebar)
+\definecolor{secondary}{HTML}{14b8a6} % Teal (Boutons et accents)
+\definecolor{accent}{HTML}{3b82f6} % Bleu vif
+\definecolor{lightbg}{HTML}{f8fafc}
+
+% --- Configuration des liens ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    filecolor=magenta,      
+    urlcolor=secondary,
+    pdftitle={Rapport PFE - Smart Workplace},
+    pdfauthor={Khalil Bouzit \& Mohammed Ouirzgane}
+}
+
+% --- Personnalisation des titres de chapitres ---
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{primary}}
+  {\chaptertitlename\ \thechapter}{20pt}{\Huge}
+  
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{primary}}{\thesection}{1em}{}[{\titlerule[0.8pt]}]
+  
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{secondary}}{\thesubsection}{1em}{}
+
+% --- Style de page (En-tête et Pied de page) ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{gray}{\small Projet de Fin d'Études}}
+\fancyhead[R]{\textcolor{gray}{\small Smart Workplace - Intelligence Artificielle}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+\setstretch{1.15} % Interligne légèrement augmenté
+
+\begin{document}
+
+% =========================================================
+% PAGE DE GARDE MAGNIFIQUE
+% =========================================================
+\begin{titlepage}
+    % Décoration de fond (Bleu en haut, Teal en bas)
+    \begin{tikzpicture}[remember picture,overlay]
+        \fill[primary] (current page.north west) rectangle ([yshift=-6cm]current page.north east);
+        \fill[secondary] (current page.south west) rectangle ([yshift=2cm]current page.south east);
+    \end{tikzpicture}
+    
+    \vspace*{-3cm}
+    
+    % En-tête avec Logo de l'École
+    \begin{center}
+        % Espace réservé pour le logo (TikZ box)
+        \begin{tikzpicture}
+            \node[draw=white, dashed, line width=1pt, rounded corners, minimum width=5cm, minimum height=3.5cm, align=center, text=white] {
+                \textbf{\Large LOGO DE L'ÉCOLE} \\[0.2cm]
+                \small (Remplacer par \texttt{\textbackslash includegraphics})
+            };
+        \end{tikzpicture}\\[0.6cm]
+        
+        \textcolor{white}{\Large \textbf{UNIVERSITÉ / ÉCOLE D'INGÉNIEURS}}\\[0.2cm]
+        \textcolor{white}{\large Département d'Informatique et Technologies de l'Information}
+    \end{center}
+    
+    \vspace{3.5cm}
+    
+    \begin{center}
+        \textsc{\LARGE \textcolor{primary}{Rapport de Projet de Fin d'Études}}\\[0.6cm]
+        
+        \rule{\linewidth}{0.8mm} \\[1cm]
+        
+        % Titre principal
+        {\fontsize{36}{40}\selectfont \bfseries \textcolor{primary}{SMART WORKPLACE}}\\[0.5cm]
+        {\Large \bfseries \textcolor{secondary}{Conception et Développement d'un Système Intelligent de Contrôle d'Accès par Reconnaissance Faciale (Deep Learning)}}\\[1cm]
+        
+        \rule{\linewidth}{0.8mm} \\[2cm]
+        
+        % Auteurs et Encadrants
+        \begin{minipage}{0.45\textwidth}
+            \begin{flushleft} \large
+                \emph{Réalisé par :}\\
+                \textbf{Khalil BOUZIT}\\
+                \textbf{Mohammed OUIRZGANE}
+            \end{flushleft}
+        \end{minipage}
+        \hfill
+        \begin{minipage}{0.45\textwidth}
+            \begin{flushright} \large
+                \emph{Sous la direction de :} \\
+                \textbf{M. / Mme [Nom du Professeur]}
+            \end{flushright}
+        \end{minipage}
+        
+        \vfill
+        
+        % Année Universitaire
+        {\large Année Universitaire 2025 - 2026}
+    \end{center}
+    \vspace*{0.5cm}
+\end{titlepage}
+
+% =========================================================
+% REMERCIEMENTS & RÉSUMÉ
+% =========================================================
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+La réalisation de ce mémoire a été possible grâce au concours de plusieurs personnes à qui nous voudrions témoigner notre gratitude.
+
+Nous tenons tout d'abord à adresser nos remerciements les plus sincères à notre encadrant, \textbf{M./Mme [Nom]}, pour sa disponibilité constante, ses directives précieuses et la confiance qu'il/elle nous a accordée tout au long de ce projet. Son expertise technique et ses conseils avisés nous ont permis de surmonter de nombreux défis.
+
+Nous remercions également le corps professoral de \textbf{[Nom de l'École]} pour la richesse des enseignements dispensés durant notre cursus, qui nous ont donné les bagages nécessaires pour mener à bien ce projet mêlant développement web et intelligence artificielle.
+
+Enfin, nous adressons notre plus profonde gratitude à nos familles respectives pour leur soutien inconditionnel et leurs encouragements quotidiens.
+
+\vspace{2cm}
+
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+La sécurité et la gestion des flux de ressources humaines sont des piliers fondamentaux de toute entreprise moderne. Historiquement dominés par des systèmes vulnérables (cartes RFID transférables, codes oubliés) ou contraignants (empreintes digitales peu hygiéniques), les systèmes de contrôle d'accès amorcent aujourd'hui une révolution grâce à l'Intelligence Artificielle. 
+
+Ce projet, baptisé \textbf{"Smart Workplace"}, consiste à concevoir, développer et déployer une solution complète de pointage par \textbf{Reconnaissance Faciale temps réel}. En s'appuyant sur des Réseaux de Neurones Convolutionnels (CNN) via les modèles \textbf{YuNet} (pour la détection) et \textbf{SFace} (pour l'extraction biométrique), l'application identifie les employés avec une précision de qualité industrielle, même dans des conditions d'éclairage variables ou selon différents angles.
+
+Le cœur de calcul en \textbf{Python} est encapsulé dans une architecture web propulsée par \textbf{Flask}, offrant aux administrateurs un \textbf{Tableau de bord (Dashboard) ergonomique}. De nombreuses optimisations d'ingénierie (Multithreading asynchrone, capture biométrique en rafale, accès bas niveau à l'API vidéo Windows) ont été implémentées pour garantir une exécution à \textbf{30 images par seconde (FPS)} sur du matériel standard, prouvant ainsi la viabilité technique et économique de la solution.
+
+% =========================================================
+% TABLE DES MATIÈRES
+% =========================================================
+\tableofcontents
+\newpage
+\listoffigures
+\newpage
+
+% =========================================================
+% CHAPITRE 1 : INTRODUCTION
+% =========================================================
+\chapter{Introduction Générale}
+\section{Contexte de l'Industrie 4.0 et du Smart Office}
+À l'ère de l'Industrie 4.0 et de la digitalisation accélérée des espaces de travail, les organisations cherchent des moyens de simplifier les interactions entre l'humain et l'infrastructure de l'entreprise. Le concept de "Smart Workplace" ou "Smart Office" vise à utiliser l'Internet des Objets (IoT) et l'Intelligence Artificielle pour créer un environnement autonome. La gestion des présences et la sécurité des accès aux bâtiments sensibles constituent la porte d'entrée de cet écosystème intelligent.
+
+\section{Critique des Solutions Existantes (Problématique)}
+Les entreprises actuelles utilisent principalement trois catégories de contrôle d'accès :
+\begin{enumerate}
+    \item \textbf{Cartes et Badges RFID :} Extrêmement répandus, mais ils présentent le défaut majeur du \textit{"Buddy Punching"} (un employé pointe pour un collègue en retard). De plus, le coût de remplacement des badges perdus est une dépense récurrente pour les départements RH.
+    \item \textbf{Mots de passe et Codes PIN :} Mémorisables, mais lents à saisir lors des heures de pointe (création de files d'attente à l'entrée).
+    \item \textbf{Biométrie de contact (Empreintes) :} Sécurisée, mais décriée depuis la crise sanitaire mondiale pour des raisons d'hygiène, car elle nécessite un contact physique répété par des centaines d'utilisateurs sur la même surface.
+\end{enumerate}
+
+Face à ces limites, la reconnaissance faciale s'impose comme la solution idéale : elle est infalsifiable (biométrie propre), totalement "sans contact" (hygiénique), et extrêmement rapide (frictionless).
+
+\section{Cahier des Charges et Objectifs}
+Le projet "Smart Workplace" a été conçu pour répondre à un cahier des charges rigoureux :
+\begin{itemize}
+    \item \textbf{Fluidité (Temps Réel) :} Le système doit analyser le flux vidéo d'une webcam classique à au moins 25-30 images par seconde (FPS) sans latence ("lag").
+    \item \textbf{Précision :} Éliminer les faux positifs. Le système ne doit pas confondre deux employés.
+    \item \textbf{Expérience Utilisateur (UI/UX) :} L'administrateur doit disposer d'une interface web moderne, esthétique ("Dark Mode"), générant des statistiques et alertes automatisées.
+    \item \textbf{Autonomie :} Le processus d'enrôlement (ajout d'un nouvel employé) doit se faire rapidement via l'interface web avec une capture photo automatique, déclenchant l'apprentissage de l'IA en arrière-plan sans bloquer l'application.
+\end{itemize}
+
+% =========================================================
+% CHAPITRE 2 : TECHNOLOGIES ET INTELLIGENCE ARTIFICIELLE
+% =========================================================
+\chapter{Fondations Technologiques et État de l'Art}
+
+Le développement d'un système intelligent et réactif exige un choix rigoureux de technologies. Cette section détaille notre "stack" technologique et justifie l'utilisation des modèles d'IA modernes.
+
+\section{Le Langage et le Serveur (Backend)}
+L'architecture applicative repose sur des outils reconnus pour leur robustesse :
+\begin{itemize}
+    \item \textbf{Python 3 :} Le langage incontesté dans le domaine de la Data Science et de la Vision par Ordinateur. Il permet d'interconnecter facilement des librairies complexes (OpenCV, Numpy) avec des serveurs web.
+    \item \textbf{Flask :} Micro-framework web Python. Contrairement à Django, Flask n'impose pas de structure lourde, ce qui est essentiel pour une application orientée traitement de flux vidéo continu (streaming MJPEG).
+    \item \textbf{SQLite \& SQLAlchemy (ORM) :} Base de données relationnelle embarquée. L'utilisation d'un ORM permet d'interagir avec la base de données via des objets Python, garantissant un code propre et sécurisé contre les injections SQL.
+\end{itemize}
+
+\section{Évolution des Modèles IA : De LBPH aux Réseaux de Neurones}
+Au cours de nos travaux de recherche, nous avons expérimenté plusieurs générations d'algorithmes de reconnaissance faciale.
+
+\subsection{L'Approche Classique : Haar Cascades \& LBPH}
+Initialement, le prototype utilisait la méthode \textbf{LBPH (Local Binary Patterns Histograms)} combinée au détecteur de \textbf{Haar Cascades}. Bien que rapide, cette méthode (inventée dans les années 2000) a révélé de grandes faiblesses :
+\begin{itemize}
+    \item \textbf{Sensibilité à l'éclairage :} LBPH analyse la texture en niveaux de gris, une simple ombre modifiait complètement le résultat.
+    \item \textbf{Alignement strict :} Le visage devait être parfaitement face à la caméra.
+\end{itemize}
+
+\subsection{Le Choix du Deep Learning : YuNet et SFace}
+Pour surmonter ces défauts, nous avons implémenté des architectures basées sur les Réseaux de Neurones Convolutionnels (CNN). 
+
+\textbf{1. Le Détecteur de Visage : YuNet}\\
+Développé spécifiquement pour être performant sur CPU, YuNet identifie non seulement les boîtes englobantes ("Bounding Boxes") des visages, mais aussi 5 points de repère faciaux (les yeux, le nez, la bouche). Ces points sont cruciaux pour "redresser" le visage mathématiquement (Alignement) avant la phase de reconnaissance.
+
+\textbf{2. L'Extracteur de Caractéristiques : SFace}\\
+Une fois le visage détecté et aligné, il est transmis au modèle \textbf{SFace (FaceRecognizerSF)}. Inspiré des architectures de type \textit{ResNet}, SFace ne compare pas des pixels. Il compresse l'image du visage en un vecteur mathématique unique de 128 dimensions (appelé \textbf{Embedding}). 
+
+Pour vérifier l'identité, l'algorithme calcule la \textbf{Similarité Cosinus} entre l'embedding de la vidéo en direct et ceux stockés dans notre base de données. Si le résultat dépasse le seuil paramétré ($\approx 0.36$), l'employé est reconnu.
+
+% =========================================================
+% CHAPITRE 3 : ARCHITECTURE ET DÉFIS D'INGÉNIERIE
+% =========================================================
+\chapter{Conception Logicielle et Optimisations}
+
+La reconnaissance faciale en temps réel est une opération très coûteuse en ressources de calcul (CPU). Cette section décrit comment nous avons architecturé le code pour garantir la fluidité.
+
+\section{Architecture Globale du Système}
+
+La figure \ref{fig:architecture} illustre le flux de données depuis l'objectif de la caméra jusqu'à l'écran de l'administrateur.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[node distance=1.5cm and 2cm, auto, thick, >=stealth,
+        box/.style={draw=primary, rounded corners, fill=white, text width=3.5cm, align=center, minimum height=1.5cm, drop shadow={opacity=0.1}},
+        db/.style={draw=secondary, shape=cylinder, fill=white, aspect=0.25, minimum height=2cm, minimum width=2.5cm, align=center}
+    ]
+        % Nodes
+        \node[box, fill=gray!10] (cam) {\textbf{Webcam (HD)} \\ \footnotesize Flux vidéo direct};
+        \node[box, fill=blue!5, right=of cam] (thread) {\textbf{AsyncCamera} \\ \footnotesize Thread de lecture (OpenCV)};
+        \node[box, fill=teal!5, right=of thread] (yunet) {\textbf{IA (YuNet \& SFace)} \\ \footnotesize Détection et Alignement};
+        \node[box, fill=purple!5, below=of yunet] (flask) {\textbf{Backend Flask} \\ \footnotesize Logique métier et Alertes};
+        \node[db, left=of flask] (sqlite) {\textbf{SQLite} \\ \footnotesize Embeddings \& Logs};
+        \node[box, fill=orange!5, left=of sqlite] (front) {\textbf{Dashboard Web} \\ \footnotesize HTML/JS/CSS};
+
+        % Edges
+        \draw[->, color=primary, line width=1pt] (cam) -- node[above] {\small Images brutes} (thread);
+        \draw[->, color=primary, line width=1pt] (thread) -- node[above] {\small Downscaling (x0.5)} (yunet);
+        \draw[->, color=primary, line width=1pt] (yunet) -- node[right] {\small Matrices 128D} (flask);
+        \draw[<->, color=primary, line width=1pt] (flask) -- node[above] {\small Requêtes SQL} (sqlite);
+        \draw[->, color=primary, line width=1pt] (flask) to[bend left=15] node[below] {\small MJPEG Stream \& JSON} (front);
+        
+    \end{tikzpicture}
+    \caption{Architecture MVC et Flux de données du système}
+    \label{fig:architecture}
+\end{figure}
+
+\section{Optimisations Majeures des Performances (FPS)}
+Initialement, l'application souffrait de latence ("lag"), la vidéo saccadait. Trois optimisations ont permis d'atteindre 30 images par seconde :
+
+\begin{enumerate}
+    \item \textbf{Interface DirectShow (CAP\_DSHOW) :} Sous Windows, la connexion à la caméra utilise parfois par défaut le backend MSMF, instable et lent à démarrer. Nous avons forcé l'utilisation du backend bas-niveau \textit{DirectShow}, réduisant le temps d'initialisation de la caméra de plusieurs secondes à quelques millisecondes.
+    \item \textbf{Multithreading Asynchrone (\texttt{AsyncCamera}) :} La fonction bloquante \texttt{cap.read()} a été placée dans un \textit{Thread daemon} indépendant en Python. L'algorithme de détection récupère simplement la dernière "frame" mise en mémoire partagée, évitant ainsi un goulot d'étranglement matériel.
+    \item \textbf{Downscaling Dynamique :} YuNet est rapide, mais analyser une image 1080p est redondant. Le backend redimensionne silencieusement l'image à 50\% de sa taille d'origine (ex: 480x270) \textit{uniquement pour le calcul de l'IA}, accélérant l'inférence par 4, tandis que la vidéo affichée à l'utilisateur reste en Haute Définition.
+\end{enumerate}
+
+\section{Ingénierie de l'Enrôlement : La Capture Rafale (Burst)}
+Pour qu'un réseau de neurones soit précis, il a besoin de données variées. Plutôt que de demander à l'utilisateur d'importer des dizaines de photos manuellement, nous avons conçu un processus de \textbf{Capture en Rafale (Burst Capture)}.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[node distance=2.5cm, auto, thick, >=stealth]
+        % Roles
+        \node[draw=primary, fill=lightbg, minimum width=3cm, minimum height=1cm, rounded corners] (user) {\textbf{Administrateur}};
+        \node[draw=secondary, fill=lightbg, minimum width=3cm, minimum height=1cm, right=2cm of user, rounded corners] (client) {\textbf{Navigateur (JS)}};
+        \node[draw=accent, fill=lightbg, minimum width=3cm, minimum height=1cm, right=3cm of client, rounded corners] (serveur) {\textbf{Serveur Flask}};
+        
+        % Lifelines
+        \draw[dashed, color=gray] (user.south) -- +(0,-5.5);
+        \draw[dashed, color=gray] (client.south) -- +(0,-5.5);
+        \draw[dashed, color=gray] (serveur.south) -- +(0,-5.5);
+        
+        % Arrows
+        \draw[->, color=primary] ([yshift=-1cm]user.south) -- node[above, text width=2.5cm, align=center] {\small Clic sur \\ "Démarrer Rafale"} ([yshift=-1cm]client.south);
+        
+        % Self loop client
+        \draw[->, color=secondary] ([yshift=-1.8cm]client.south) -- +(1cm,0) |- node[right, text width=3.5cm, xshift=0.2cm] {\small Répète 16 fois :\\1. Extraction Canvas\\2. Redimension (640px)\\3. Encodage Base64} ([yshift=-2.8cm]client.south);
+        
+        \draw[->, color=accent] ([yshift=-3.8cm]client.south) -- node[above] {\small Envoi Array JSON (< 2 Mo)} ([yshift=-3.8cm]serveur.south);
+        
+        \draw[->, color=accent] ([yshift=-4.3cm]serveur.south) -- +(1cm,0) |- node[right, text width=4cm, xshift=0.2cm] {\small Décodage B64, Sauvegarde,\\ \textbf{Lancement du Thread} \\ \textbf{d'Entraînement IA}} ([yshift=-5.3cm]serveur.south);
+    \end{tikzpicture}
+    \caption{Diagramme de Séquence du processus d'enrôlement Biométrisée}
+    \label{fig:burst_seq}
+\end{figure}
+
+Pour contourner la limite de taille imposée par le protocole HTTP (\texttt{MAX\_CONTENT\_LENGTH} et \texttt{MAX\_FORM\_MEMORY\_SIZE}), le navigateur (via l'API Canvas HTML5) réduit la résolution de la caméra côté client à 640x480 pixels, compressant le poids total des 16 images à moins de 2 Mégaoctets.
+
+
+% =========================================================
+% CHAPITRE 4 : RÉSULTATS VISUELS ET INTERFACES
+% =========================================================
+\chapter{Résultats, Tableaux de Bord et Interfaces}
+
+La réussite technique du projet se matérialise par une interface utilisateur (UI) soignée, pensée pour offrir la meilleure Expérience Utilisateur (UX) possible aux responsables des Ressources Humaines.
+
+\section{Tableau de Bord Principal (Dashboard)}
+L'écran d'accueil centralise toutes les statistiques. Grâce à \textbf{Chart.js}, des graphiques générés dynamiquement affichent les pics d'affluence. Une fenêtre latérale répertorie les \textbf{Alertes Système} (ex: Arrivées tardives après 09h00, visages inconnus détectés), sauvegardées intelligemment dans la base de données.
+
+\begin{figure}[H]
+    \centering
+    % DECOMMENTE LA LIGNE SUIVANTE POUR AFFICHER TON IMAGE REELLE
+    % \includegraphics[width=0.95\textwidth]{images/screenshot_dashboard.png}
+    \begin{tcolorbox}[colback=lightbg, colframe=primary, width=0.95\textwidth, height=7cm, valign=center, halign=center, arc=2mm]
+        \textcolor{gray}{\Large \textit{[ESPACE RÉSERVÉ: Insérez ici la capture du Tableau de Bord (Graphiques)]}}
+    \end{tcolorbox}
+    \caption{Tableau de bord : Vue analytique et statistiques de présence}
+\end{figure}
+
+\section{Interface de Présence Temps Réel}
+Ce module est le centre névralgique de la surveillance. Le flux vidéo encodé par OpenCV y est affiché avec une fluidité remarquable. Les visages détectés sont encadrés, avec un indicateur de \textbf{confiance en pourcentage}. Une bannière de statut confirme si l'événement enregistré est une "Entrée" (en vert) ou une "Sortie" (en bleu), filtrée par un mécanisme "d'anti-rebond" logiciel.
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.95\textwidth]{images/screenshot_camera.png}
+    \begin{tcolorbox}[colback=lightbg, colframe=primary, width=0.95\textwidth, height=7cm, valign=center, halign=center, arc=2mm]
+        \textcolor{gray}{\Large \textit{[ESPACE RÉSERVÉ: Insérez ici la capture de l'interface Vidéo avec la détection faciale de "OMAR BH"]}}
+    \end{tcolorbox}
+    \caption{Module Temps Réel : Surveillance vidéo, détections et historique instantané}
+\end{figure}
+
+\section{Gestion et Enrôlement des Employés}
+La page d'ajout d'employés a été développée comme un formulaire ergonomique. Elle inclut l'outil de \textit{Capture Rafale (16 images)}. Lors de la soumission, une notification "Entraînement de l'IA en cours..." s'affiche en superposition sur tout l'écran, rassurant l'utilisateur sur le statut du traitement en arrière-plan.
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.95\textwidth]{images/screenshot_formulaire.png}
+    \begin{tcolorbox}[colback=lightbg, colframe=primary, width=0.95\textwidth, height=7cm, valign=center, halign=center, arc=2mm]
+        \textcolor{gray}{\Large \textit{[ESPACE RÉSERVÉ: Insérez ici la capture du formulaire d'employé montrant le bouton "Capture Rafale"]}}
+    \end{tcolorbox}
+    \caption{Portail de Gestion : Profil employé et outil d'acquisition biométrique}
+\end{figure}
+
+% =========================================================
+% CONCLUSION
+% =========================================================
+\chapter{Conclusion Générale et Perspectives}
+
+Le développement du projet \textbf{Smart Workplace} a constitué un pont exceptionnel entre les algorithmes complexes d'Intelligence Artificielle et la création de produits Web prêts pour la production. Nous avons conçu et implémenté avec succès une solution matérielle et logicielle de contrôle de présence novatrice, répondant de bout-en-bout aux failles des systèmes traditionnels.
+
+L'adoption de l'architecture \textbf{YuNet/SFace} a prouvé que des modèles de pointe (Deep Learning) peuvent être exécutés sur des processeurs standards avec une précision redoutable, évitant aux entreprises l'achat de serveurs coûteux munis de cartes graphiques. L'optimisation algorithmique poussée (Multithreading OpenCV, réglage dynamique des tailles d'images, backend DirectShow) nous a permis de surmonter le défi redoutable de l'analyse vidéo sans latence. Enfin, l'interface graphique a été traitée avec une rigueur professionnelle, livrant un outil analytique digne des standards de l'industrie SaaS.
+
+\section*{Perspectives d'Évolution}
+Bien que le système soit mature et pleinement fonctionnel, son déploiement à une échelle multi-sites ouvre des perspectives de développement stimulantes :
+\begin{itemize}
+    \item \textbf{Technologie Liveness (Anti-Spoofing) :} Intégrer un algorithme de détection de vivacité permettant de distinguer un véritable visage humain d'une simple photographie affichée sur un smartphone.
+    \item \textbf{Conteneurisation (Docker) et Déploiement Cloud :} Placer l'application dans des conteneurs \textit{Docker} et migrer la base \textit{SQLite} vers un cluster \textit{PostgreSQL} distant pour synchroniser les caméras de multiples bâtiments internationaux sur un même dashboard.
+    \item \textbf{Intégration API RH :} Permettre aux grands progiciels de gestion (SAP, Workday) de se synchroniser avec l'API \textit{Smart Workplace} pour automatiser instantanément les fiches de paie en fonction des heures travaillées réelles.
+\end{itemize}
+
+\end{document}

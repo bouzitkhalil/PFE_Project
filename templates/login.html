@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Connexion{% endblock %}
+{% block content %}
+<div class="login-page">
+
+  <!-- Left: Login form -->
+  <div class="login-panel">
+    <div class="login-logo">
+      <div class="brand-icon"><i class="bi bi-buildings-fill"></i></div>
+      <strong>Smart Workplace</strong>
+    </div>
+
+    <h1>Bienvenue 👋</h1>
+    <p>Connectez-vous pour accéder au tableau de bord analytique.</p>
+
+    <form method="post" action="{{ url_for('login') }}" id="login-form">
+      <div class="form-group mb-4">
+        <label class="form-label" for="email">Adresse e-mail</label>
+        <div style="position:relative;">
+          <i class="bi bi-envelope" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px;"></i>
+          <input id="email" name="email" type="email" class="form-control"
+                 style="padding-left:38px;"
+                 placeholder="admin@smartwork.local" required
+                 value="admin@smartwork.local">
+        </div>
+      </div>
+
+      <div class="form-group mb-4" style="margin-bottom:24px;">
+        <label class="form-label" for="password">Mot de passe</label>
+        <div style="position:relative;">
+          <i class="bi bi-lock" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px;"></i>
+          <input id="password" name="password" type="password" class="form-control"
+                 style="padding-left:38px;"
+                 placeholder="••••••••" required>
+          <button type="button" onclick="togglePwd()" id="pwd-toggle"
+                  style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:15px;">
+            <i class="bi bi-eye" id="pwd-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" id="login-btn">
+        <i class="bi bi-shield-lock-fill"></i> Se connecter
+      </button>
+    </form>
+
+    <p style="margin-top:24px;font-size:12px;color:var(--text-muted);text-align:center;">
+      Compte démo : <code style="background:var(--bg2);padding:2px 6px;border-radius:4px;color:var(--indigo);">admin@smartwork.local</code> / <code style="background:var(--bg2);padding:2px 6px;border-radius:4px;color:var(--indigo);">admin123</code>
+    </p>
+  </div>
+
+  <!-- Right: Visual -->
+  <div class="login-visual">
+    <div class="login-visual-overlay"></div>
+    <div class="login-stats-card">
+      <h2>Employés présents</h2>
+      <div class="login-stat-num" id="login-stat">—</div>
+      <div class="login-stat-label">actuellement dans les locaux</div>
+      <div class="scan-line"></div>
+      <p style="margin-top:16px;font-size:12px;color:var(--text-muted);">
+        <i class="bi bi-shield-check" style="color:var(--emerald);"></i>
+        Système sécurisé · Reconnaissance faciale IA
+      </p>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function togglePwd() {
+  const inp = document.getElementById('password');
+  const ico = document.getElementById('pwd-eye');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    ico.className = 'bi bi-eye-slash';
+  } else {
+    inp.type = 'password';
+    ico.className = 'bi bi-eye';
+  }
+}
+
+// Fetch live presence for the stat card
+fetch('/api/presence').then(r => r.ok ? r.json() : null).then(d => {
+  if (d) document.getElementById('login-stat').textContent = d.present;
+}).catch(() => {});
+
+document.getElementById('login-form').addEventListener('submit', function() {
+  const btn = document.getElementById('login-btn');
+  btn.innerHTML = '<i class="bi bi-arrow-repeat" style="animation:spin 1s linear infinite;display:inline-block;"></i> Connexion…';
+  btn.disabled = true;
+});
+</script>
+<style>
+@keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+</style>
+{% endblock %}

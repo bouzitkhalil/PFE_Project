@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Smart Workplace{% endblock %} — Occupancy Analytics</title>
+  <meta name="description" content="Plateforme d'analyse de présence et d'occupation des locaux en temps réel.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+{% if session.get('user_id') %}
+<!-- ── Sidebar ─────────────────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon"><i class="bi bi-buildings-fill"></i></div>
+    <div class="brand-text">
+      <strong>Smart Workplace</strong>
+      <small>Occupancy Analytics</small>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <p class="nav-label">Navigation</p>
+    <a href="{{ url_for('dashboard') }}"
+       class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+      <i class="bi bi-speedometer2"></i> Vue générale
+    </a>
+    <a href="{{ url_for('video') }}"
+       class="nav-link {% if request.endpoint == 'video' %}active{% endif %}">
+      <i class="bi bi-camera-video-fill"></i> Présence temps réel
+    </a>
+    <a href="{{ url_for('analytics') }}"
+       class="nav-link {% if request.endpoint == 'analytics' %}active{% endif %}">
+      <i class="bi bi-graph-up-arrow"></i> Statistiques
+    </a>
+    <a href="{{ url_for('employees') }}"
+       class="nav-link {% if request.endpoint in ['employees','employee_new','employee_edit'] %}active{% endif %}">
+      <i class="bi bi-people-fill"></i> Employés
+    </a>
+    <a href="{{ url_for('reports') }}"
+       class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}">
+      <i class="bi bi-file-earmark-bar-graph-fill"></i> Rapports
+    </a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-chip">
+      <div class="user-avatar">{{ session.name[0]|upper }}</div>
+      <div class="user-chip-text">
+        <strong>{{ session.name }}</strong>
+        <small>{{ session.role|capitalize }}</small>
+      </div>
+    </div>
+    <a href="{{ url_for('logout') }}" class="logout-btn">
+      <i class="bi bi-box-arrow-left"></i> Déconnexion
+    </a>
+  </div>
+</aside>
+{% endif %}
+
+<!-- ── Main ────────────────────────────────────────────────────────── -->
+<main class="{% if session.get('user_id') %}app-shell{% else %}auth-shell{% endif %}">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-stack">
+      {% for cat, msg in messages %}
+      <div class="flash-msg flash-{{ cat }}">
+        <i class="bi {% if cat == 'success' %}bi-check-circle-fill{% elif cat == 'danger' %}bi-x-circle-fill{% elif cat == 'warning' %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %}"></i>
+        {{ msg }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<!-- Training Overlay -->
+<div id="training-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.85); z-index:9999; backdrop-filter:blur(6px); flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+  <div style="width:60px; height:60px; border:6px solid rgba(255,255,255,0.1); border-top-color:var(--teal); border-radius:50%; animation:spin 1s linear infinite; margin-bottom:20px;"></div>
+  <h2 style="color:white; margin-bottom:8px;">Entraînement de l'IA en cours...</h2>
+  <p style="color:var(--text-dim);">Traitement des embeddings faciaux. Veuillez patienter.</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+{% block scripts %}{% endblock %}
+
+<script>
+// Auto-dismiss flash messages
+document.querySelectorAll('.flash-msg').forEach(el => {
+  setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(20px)'; el.style.transition = '.3s'; setTimeout(() => el.remove(), 300); }, 4500);
+});
+
+// Poll for training status
+function checkTraining() {
+  fetch('/api/system_status')
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (!data) return;
+      const overlay = document.getElementById('training-overlay');
+      if (data.is_training) {
+        overlay.style.display = 'flex';
+      } else {
+        overlay.style.display = 'none';
+      }
+    })
+    .catch(() => {});
+}
+setInterval(checkTraining, 1500);
+checkTraining();
+</script>
+<style>
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+</body>
+</html>

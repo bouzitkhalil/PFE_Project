@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Gestion des employés{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="eyebrow">Ressources humaines</div>
+    <h1>Employés <span style="color:var(--indigo)">({{ employees|length }})</span></h1>
+  </div>
+  <div class="topbar-right">
+    {% if not model_trained and employees %}
+    <form action="{{ url_for('api_retrain') }}" method="post">
+      <button class="btn btn-outline btn-sm"><i class="bi bi-cpu"></i> Entraîner le modèle</button>
+    </form>
+    {% endif %}
+    <a href="{{ url_for('employee_new') }}" class="btn btn-primary">
+      <i class="bi bi-person-plus-fill"></i> Ajouter un employé
+    </a>
+  </div>
+</div>
+
+<!-- Search bar -->
+<div class="search-bar mb-4">
+  <div class="search-input-wrap">
+    <i class="bi bi-search"></i>
+    <input type="text" class="search-input" id="emp-search" placeholder="Rechercher par nom, département, poste…">
+  </div>
+  <select class="form-control" id="dept-filter" style="max-width:200px;">
+    <option value="">Tous les départements</option>
+    {% set depts = employees | map(attribute='department') | unique | list %}
+    {% for d in depts %}<option>{{ d }}</option>{% endfor %}
+  </select>
+  <select class="form-control" id="status-filter" style="max-width:180px;">
+    <option value="">Tout statut</option>
+    <option value="entry">Présent</option>
+    <option value="absent">Absent</option>
+  </select>
+</div>
+
+<!-- Employee grid -->
+{% if employees %}
+<div class="emp-grid" id="emp-grid">
+  {% for emp in employees %}
+  <div class="emp-card"
+       data-name="{{ emp.first_name }} {{ emp.last_name }}"
+       data-dept="{{ emp.department }}"
+       data-pos="{{ emp.position }}"
+       data-status="{{ emp.status }}">
+
+    <div class="emp-card-header">
+      {% if emp.photo_path %}
+        <img src="{{ url_for('static', filename=emp.photo_path) }}"
+             alt="{{ emp.first_name }}" class="emp-avatar">
+      {% else %}
+        <div class="emp-avatar-placeholder">{{ emp.first_name[0]|upper }}{{ emp.last_name[0]|upper }}</div>
+      {% endif %}
+      <div style="flex:1;min-width:0;">
+        <div class="emp-name truncate">{{ emp.first_name }} {{ emp.last_name }}</div>
+        <div class="emp-dept">{{ emp.department }}</div>
+        <div class="emp-pos text-sm">{{ emp.position }}</div>
+      </div>
+    </div>
+
+    <div class="emp-meta">
+      <span class="badge {% if emp.status == 'entry' %}badge-entry{% else %}badge-absent{% endif %}">
+        <i class="bi {% if emp.status == 'entry' %}bi-person-check{% else %}bi-person-dash{% endif %}"></i>
+        {% if emp.status == 'entry' %}Présent{% else %}Absent{% endif %}
+      </span>
+      {% if emp.status == 'entry' %}
+      <span class="text-muted text-sm"><i class="bi bi-clock"></i> {{ emp.duration }}</span>
+      {% endif %}
+      {% if emp.photo_count > 0 %}
+      <span class="text-muted text-sm" title="{{ emp.photo_count }} photo(s) de référence">
+        <i class="bi bi-camera"></i> {{ emp.photo_count }}
+      </span>
+      {% else %}
+      <span style="font-size:11px;color:var(--amber);" title="Aucune photo — reconnaissance impossible">
+        <i class="bi bi-exclamation-triangle"></i> Sans photo
+      </span>
+      {% endif %}
+    </div>
+
+    <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">
+      <i class="bi bi-envelope"></i> {{ emp.email }}
+    </div>
+
+    <div class="emp-actions">
+      <a href="{{ url_for('employee_edit', eid=emp.id) }}" class="btn btn-outline btn-sm" style="flex:1;justify-content:center;">
+        <i class="bi bi-pencil-fill"></i> Modifier
+      </a>
+      <form action="{{ url_for('employee_delete', eid=emp.id) }}" method="post"
+            onsubmit="return confirm('Supprimer {{ emp.first_name }} {{ emp.last_name }} ?');">
+        <button type="submit" class="btn btn-danger btn-sm">
+          <i class="bi bi-trash3-fill"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="panel" style="text-align:center;padding:60px;">
+  <i class="bi bi-people" style="font-size:52px;color:var(--indigo);opacity:.4;display:block;margin-bottom:16px;"></i>
+  <h3 style="color:#fff;margin-bottom:8px;">Aucun employé enregistré</h3>
+  <p style="color:var(--text-muted);margin-bottom:20px;">Commencez par ajouter vos premiers employés avec leurs photos de référence.</p>
+  <a href="{{ url_for('employee_new') }}" class="btn btn-primary">
+    <i class="bi bi-person-plus-fill"></i> Ajouter le premier employé
+  </a>
+</div>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+<script>
+const search   = document.getElementById('emp-search');
+const deptSel  = document.getElementById('dept-filter');
+const statusSel = document.getElementById('status-filter');
+
+function filterCards() {
+  const q  = search.value.toLowerCase();
+  const d  = deptSel.value.toLowerCase();
+  const s  = statusSel.value;
+  document.querySelectorAll('.emp-card').forEach(card => {
+    const name   = card.dataset.name.toLowerCase();
+    const dept   = card.dataset.dept.toLowerCase();
+    const pos    = card.dataset.pos.toLowerCase();
+    const status = card.dataset.status;
+    const matchQ = !q || name.includes(q) || dept.includes(q) || pos.includes(q);
+    const matchD = !d || dept === d;
+    const matchS = !s || status === s || (s === 'absent' && status !== 'entry');
+    card.style.display = (matchQ && matchD && matchS) ? '' : 'none';
+  });
+}
+search.addEventListener('input', filterCards);
+deptSel.addEventListener('change', filterCards);
+statusSel.addEventListener('change', filterCards);
+</script>
+{% endblock %}

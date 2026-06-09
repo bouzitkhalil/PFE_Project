@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+{% block title %}{% if employee %}Modifier{% else %}Ajouter{% endif %} un employé{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="eyebrow">Gestion des employés</div>
+    <h1>{% if employee %}Modifier <span style="color:var(--indigo)">{{ employee.first_name }} {{ employee.last_name }}</span>{% else %}Ajouter un <span style="color:var(--indigo)">employé</span>{% endif %}</h1>
+  </div>
+  <div class="topbar-right">
+    <a href="{{ url_for('employees') }}" class="btn btn-outline btn-sm">
+      <i class="bi bi-arrow-left"></i> Retour
+    </a>
+  </div>
+</div>
+
+<div class="form-panel">
+  <form method="post" enctype="multipart/form-data"
+        action="{% if employee %}{{ url_for('employee_edit', eid=employee.id) }}{% else %}{{ url_for('employee_new') }}{% endif %}">
+
+    <!-- Personal info -->
+    <div class="panel mb-4" style="margin-bottom:16px;">
+      <div class="form-section-title"><i class="bi bi-person-fill"></i> Informations personnelles</div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="first_name">Prénom *</label>
+          <input id="first_name" name="first_name" class="form-control"
+                 value="{{ employee.first_name if employee else '' }}"
+                 placeholder="Jean" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="last_name">Nom *</label>
+          <input id="last_name" name="last_name" class="form-control"
+                 value="{{ employee.last_name if employee else '' }}"
+                 placeholder="Dupont" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">Adresse e-mail *</label>
+          <input id="email" name="email" type="email" class="form-control"
+                 value="{{ employee.email if employee else '' }}"
+                 placeholder="jean.dupont@entreprise.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="department">Département *</label>
+          <input id="department" name="department" class="form-control"
+                 value="{{ employee.department if employee else '' }}"
+                 list="dept-list" placeholder="Informatique" required>
+          <datalist id="dept-list">
+            <option>Direction</option><option>Informatique</option><option>Ressources humaines</option>
+            <option>Finance</option><option>Marketing</option><option>Commercial</option>
+            <option>Production</option><option>Logistique</option><option>R&D</option>
+          </datalist>
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label" for="position">Poste / Fonction *</label>
+          <input id="position" name="position" class="form-control"
+                 value="{{ employee.position if employee else '' }}"
+                 placeholder="Développeur Full Stack" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main profile photo -->
+    <div class="panel mb-4" style="margin-bottom:16px;">
+      <div class="form-section-title"><i class="bi bi-camera-fill"></i> Photo de profil principale</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+
+        <!-- Preview -->
+        <div style="text-align:center;">
+          <div id="preview-wrap" style="width:160px;height:160px;border-radius:16px;overflow:hidden;border:2px solid var(--border2);margin:0 auto 12px;background:var(--bg2);display:grid;place-items:center;">
+            {% if employee and employee.photo_path %}
+              <img id="photo-preview" src="{{ url_for('static', filename=employee.photo_path) }}"
+                   style="width:100%;height:100%;object-fit:cover;">
+            {% else %}
+              <i class="bi bi-person-fill" id="photo-icon" style="font-size:48px;color:var(--text-muted);"></i>
+              <img id="photo-preview" style="width:100%;height:100%;object-fit:cover;display:none;">
+            {% endif %}
+          </div>
+          <div class="photo-upload" onclick="document.getElementById('photo-input').click();">
+            <i class="bi bi-cloud-upload-fill"></i>
+            <p>Cliquez pour choisir une image<br><small>PNG, JPG, WEBP · max 16 Mo</small></p>
+          </div>
+          <input id="photo-input" name="photo" type="file"
+                 accept=".png,.jpg,.jpeg,.webp" class="d-none">
+        </div>
+
+        <!-- Webcam capture -->
+        <div>
+          <button type="button" class="btn btn-teal btn-sm mb-4" onclick="toggleWebcam()" id="webcam-btn" style="margin-bottom:12px;">
+            <i class="bi bi-camera-reels-fill"></i> Capturer Rafale (16 images)
+          </button>
+          <input type="hidden" name="burst_photos" id="burst_photos">
+          <div class="webcam-panel" id="webcam-panel">
+            <video id="wcam-main" autoplay playsinline style="width:100%;border-radius:10px;border:1px solid var(--border2);background:#000;"></video>
+            
+            <div id="burst-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin-top:8px; display:none;"></div>
+            <div class="progress" id="burst-progress" style="height:4px; border-radius:2px; background:var(--bg2); margin-top:8px; display:none; overflow:hidden;">
+               <div id="burst-bar" style="height:100%; width:0%; background:var(--teal); transition:0.2s;"></div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:8px;" id="burst-actions">
+              <button type="button" class="btn btn-primary btn-sm" onclick="startBurst()" style="flex:1;justify-content:center;" id="burst-start-btn">
+                <i class="bi bi-play-fill"></i> Démarrer la rafale
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="closeWebcam()">Annuler</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <a href="{{ url_for('employees') }}" class="btn btn-outline">Annuler</a>
+      <button type="submit" class="btn btn-primary">
+        <i class="bi {% if employee %}bi-floppy-fill{% else %}bi-person-plus-fill{% endif %}"></i>
+        {% if employee %}Enregistrer les modifications{% else %}Ajouter l'employé{% endif %}
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- ── Reference photos (edit mode only) ─────────────────────────────── -->
+{% if employee %}
+<div class="form-panel" style="margin-top:20px;">
+  <div class="panel">
+    <div class="form-section-title"><i class="bi bi-images"></i> Photos de référence faciale</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+      Ajoutez plusieurs photos sous différents angles et éclairages pour améliorer la précision de la reconnaissance.
+    </p>
+
+    {% if photos %}
+    <div class="photo-grid mb-4" style="margin-bottom:16px;">
+      {% for ph in photos %}
+      <div class="photo-thumb">
+        <img src="{{ url_for('static', filename=ph.photo_path) }}" alt="Photo {{ loop.index }}">
+        <form action="{{ url_for('employee_delete_photo', eid=employee.id, pid=ph.id) }}" method="post"
+              onsubmit="return confirm('Supprimer cette photo ?');" style="display:inline;">
+          <button type="submit" class="photo-del"><i class="bi bi-x"></i></button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="font-size:13px;color:var(--amber);margin-bottom:16px;">
+      <i class="bi bi-exclamation-triangle"></i> Aucune photo de référence — la reconnaissance ne sera pas possible.
+    </p>
+    {% endif %}
+
+    <!-- Add reference photo form -->
+    <form method="post" enctype="multipart/form-data"
+          action="{{ url_for('employee_add_photo', eid=employee.id) }}"
+          id="ref-photo-form">
+      <input type="hidden" name="webcam_data" id="ref-webcam-data">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+        <div>
+          <label class="form-label">Uploader une photo</label>
+          <input name="photo" type="file" class="form-control" accept=".png,.jpg,.jpeg,.webp">
+          <button type="submit" class="btn btn-outline btn-sm mt-3" style="margin-top:10px;">
+            <i class="bi bi-cloud-upload"></i> Ajouter cette photo
+          </button>
+        </div>
+        <div>
+          <label class="form-label">Capturer Rafale (16 images)</label>
+          <button type="button" class="btn btn-teal btn-sm" onclick="toggleRefWebcam()" id="ref-wcam-btn">
+            <i class="bi bi-camera-reels-fill"></i> Ouvrir la webcam
+          </button>
+          <input type="hidden" name="burst_photos" id="ref_burst_photos">
+          <div class="webcam-panel mt-3" id="ref-wcam-panel" style="margin-top:10px;">
+            <video id="ref-wcam-video" autoplay playsinline style="width:100%;border-radius:8px;border:1px solid var(--border2);background:#000;"></video>
+            <canvas id="ref-wcam-canvas" style="display:none;"></canvas>
+            
+            <div id="ref-burst-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin-top:8px; display:none;"></div>
+            <div class="progress" id="ref-burst-progress" style="height:4px; border-radius:2px; background:var(--bg2); margin-top:8px; display:none; overflow:hidden;">
+               <div id="ref-burst-bar" style="height:100%; width:0%; background:var(--teal); transition:0.2s;"></div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button type="button" class="btn btn-primary btn-sm" onclick="startRefBurst()" style="flex:1;justify-content:center;" id="ref-burst-start-btn">
+                <i class="bi bi-play-fill"></i> Démarrer la rafale
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="closeRefWebcam()">Fermer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+<script>
+// ── Profile photo preview ────────────────────────────────────────
+const photoInput   = document.getElementById('photo-input');
+const photoPreview = document.getElementById('photo-preview');
+const photoIcon    = document.getElementById('photo-icon');
+photoInput && photoInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  photoPreview.src = url; photoPreview.style.display = 'block';
+  if (photoIcon) photoIcon.style.display = 'none';
+});
+
+// ── Main webcam capture ────────────────────────────────────────
+let mainStream = null;
+async function toggleWebcam() {
+  const panel = document.getElementById('webcam-panel');
+  if (panel.classList.contains('open')) { closeWebcam(); return; }
+  panel.classList.add('open');
+  try {
+    mainStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+    document.getElementById('wcam-main').srcObject = mainStream;
+  } catch(e) { alert('Webcam inaccessible : ' + e.message); panel.classList.remove('open'); }
+}
+function closeWebcam() {
+  if (mainStream) mainStream.getTracks().forEach(t => t.stop());
+  mainStream = null;
+  document.getElementById('wcam-main').srcObject = null;
+  document.getElementById('webcam-panel').classList.remove('open');
+}
+
+let burstData = [];
+function startBurst() {
+  const video = document.getElementById('wcam-main');
+  const btn = document.getElementById('burst-start-btn');
+  const grid = document.getElementById('burst-grid');
+  const prog = document.getElementById('burst-progress');
+  const bar = document.getElementById('burst-bar');
+  const canvas = document.createElement('canvas');
+  
+  const targetW = 640;
+  const targetH = Math.floor(video.videoHeight * (targetW / video.videoWidth));
+  canvas.width = targetW; canvas.height = targetH;
+  
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Capture en cours...';
+  grid.style.display = 'grid'; grid.innerHTML = '';
+  prog.style.display = 'block'; bar.style.width = '0%';
+  burstData = [];
+  
+  let count = 0;
+  const interval = setInterval(() => {
+    canvas.getContext('2d').drawImage(video, 0, 0, targetW, targetH);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    burstData.push(dataUrl);
+    
+    grid.innerHTML += `<img src="${dataUrl}" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px;">`;
+    count++;
+    bar.style.width = (count/16*100) + '%';
+    
+    if(count >= 16) {
+        clearInterval(interval);
+        document.getElementById('burst_photos').value = JSON.stringify(burstData);
+        btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> 16 images capturées';
+        
+        document.getElementById('photo-input').value = '';
+        if (photoIcon) photoIcon.style.display = 'none';
+        photoPreview.src = burstData[0]; photoPreview.style.display = 'block';
+    }
+  }, 150);
+}
+
+// ── Reference photo webcam ─────────────────────────────────────
+let refStream = null;
+async function toggleRefWebcam() {
+  const panel = document.getElementById('ref-wcam-panel');
+  if (panel.classList.contains('open')) { closeRefWebcam(); return; }
+  panel.classList.add('open');
+  try {
+    refStream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+    document.getElementById('ref-wcam-video').srcObject = refStream;
+  } catch(e) { alert('Webcam inaccessible : ' + e.message); panel.classList.remove('open'); }
+}
+function closeRefWebcam() {
+  if (refStream) refStream.getTracks().forEach(t => t.stop());
+  refStream = null;
+  document.getElementById('ref-wcam-video').srcObject = null;
+  document.getElementById('ref-wcam-panel').classList.remove('open');
+}
+
+function startRefBurst() {
+  const video = document.getElementById('ref-wcam-video');
+  const btn = document.getElementById('ref-burst-start-btn');
+  const grid = document.getElementById('ref-burst-grid');
+  const prog = document.getElementById('ref-burst-progress');
+  const bar = document.getElementById('ref-burst-bar');
+  const canvas = document.createElement('canvas');
+  
+  const targetW = 640;
+  const targetH = Math.floor(video.videoHeight * (targetW / video.videoWidth));
+  canvas.width = targetW; canvas.height = targetH;
+  
+  btn.disabled = true;
+  btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Capture en cours...';
+  grid.style.display = 'grid'; grid.innerHTML = '';
+  prog.style.display = 'block'; bar.style.width = '0%';
+  let burst = [];
+  
+  let count = 0;
+  const interval = setInterval(() => {
+    canvas.getContext('2d').drawImage(video, 0, 0, targetW, targetH);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    burst.push(dataUrl);
+    
+    grid.innerHTML += `<img src="${dataUrl}" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px;">`;
+    count++;
+    bar.style.width = (count/16*100) + '%';
+    
+    if(count >= 16) {
+        clearInterval(interval);
+        document.getElementById('ref_burst_photos').value = JSON.stringify(burst);
+        btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Traitement...';
+        closeRefWebcam();
+        document.getElementById('ref-photo-form').submit();
+    }
+  }, 150);
+}
+</script>
+{% endblock %}
