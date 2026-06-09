@@ -2,6 +2,14 @@
 
 Plateforme web locale Flask pour la detection d'entrees/sorties, la reconnaissance faciale par webcam, l'analyse d'occupation et la generation de rapports.
 
+## Clonage du dépôt
+
+```powershell
+git clone https://github.com/bouzitkhalil/PFE_Project.git
+cd PFE_Project
+```
+
+
 ## Installation
 
 ```powershell
